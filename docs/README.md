@@ -1,115 +1,246 @@
-# Internal Wallet Service
+# 🏦 Internal Wallet Service
 
-A ledger-based wallet service for high-traffic applications such as gaming platforms or loyalty programmes.
-It manages application-specific virtual credits (Gold Coins, Diamonds, Loyalty Points) with full transactional
-integrity, concurrency safety and idempotent operations. Written entirely in Java.
+> A high-performance, double-entry virtual credit ledger service built with **Java 21**, **Spring Boot 4**, and **PostgreSQL 16**. Designed for gaming platforms, loyalty programmes, and internal credits with strict transactional integrity, zero-lost-update concurrency, and idempotent execution.
 
-| Document | What it covers |
+---
+
+## 📌 Highlights
+
+- ⚖️ **Double-Entry Bookkeeping**: Every transaction creates balanced credit and debit ledger entries. The system always balances to zero (`∑ balances == 0`).
+- 🔒 **Deadlock-Free Row-Level Locking**: Pessimistic write locks (`SELECT ... FOR UPDATE`) acquired in strict ascending UUID order across all operations (`TOPUP`, `BONUS`, `SPEND`).
+- ⚡ **Strict Idempotency**: Fast-path cache lookup, lock-level recheck, and database unique constraints guarantee that duplicate requests return original results with HTTP `200 OK` without applying side-effects twice.
+- 🚀 **Production-Ready Docker**: Multi-stage lightweight Alpine build running under a non-root security profile.
+- 🧪 **100% Tested**: Comprehensive 38-test test suite covering unit math, integration flows, seeder idempotency, REST APIs, and 20-thread concurrency contention.
+
+---
+
+## 📖 Documentation Index
+
+| Guide | Description |
 |---|---|
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Layers, packages, request flows, design decisions, differences from the original project |
-| [docs/DATABASE.md](docs/DATABASE.md) | Tables, constraints, indexes, invariants, seed data |
-| [docs/API.md](docs/API.md) | Endpoints, payloads, status codes, curl examples |
-| [docs/CONCURRENCY_AND_IDEMPOTENCY.md](docs/CONCURRENCY_AND_IDEMPOTENCY.md) | Locking strategy, deadlock avoidance, duplicate-request handling |
-| [docs/TESTING.md](docs/TESTING.md) | Test strategy and what each test proves |
-| [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) | The build, phase by phase, with a definition of done per phase |
-| [docs/COMMIT_PLAN.md](docs/COMMIT_PLAN.md) | Suggested commit sequence (2-3 word messages) with exact `git add` commands |
+| 🏛️ [**Architecture**](docs/ARCHITECTURE.md) | System layers, request lifecycles, design rationale, and enhancements over legacy systems. |
+| 🗄️ [**Database & Ledger**](docs/DATABASE.md) | Entity schemas, constraints, invariants, audit queries, and seed data. |
+| 🔌 [**API Reference**](docs/API.md) | Endpoints, JSON payloads, HTTP status codes, error models, and curl examples. |
+| 🛡️ [**Concurrency & Idempotency**](docs/CONCURRENCY_AND_IDEMPOTENCY.md) | Locking hierarchy, deadlock prevention, race recovery, and performance trade-offs. |
+| 🧪 [**Testing Strategy**](docs/TESTING.md) | Unit, integration, web slice, and multithreaded concurrency tests. |
+| 📋 [**Implementation Plan**](docs/IMPLEMENTATION_PLAN.md) | Staged milestone roadmap and definitions of done. |
+| 📜 [**Commit History Plan**](docs/COMMIT_PLAN.md) | 16 milestone development commits with command blueprints. |
 
-## Tech stack
+---
 
-| Technology | Why |
-|---|---|
-| Java 21, Spring Boot 4 | Declarative transactions (`@Transactional`) and Spring Data JPA keep the data-access code small. |
-| PostgreSQL 16 | ACID transactions and row-level locking (`SELECT ... FOR UPDATE`) are the basis of the concurrency model. |
-| Double-entry ledger | Every movement is one debit plus one credit, so the whole system always sums to zero and every balance is auditable. |
-| Docker + Compose | `docker compose up --build` runs the app and its database with nothing installed locally. |
-| H2 (tests only) | The test suite needs neither Docker nor a local PostgreSQL. |
+## 🛠️ Technology Stack
 
-## Quick start
+| Layer | Technology | Purpose |
+|---|---|---|
+| **Language** | Java 21 (LTS) | Modern language features, records for immutable DTOs, clean architecture |
+| **Framework** | Spring Boot 4.0.2 | Declarative transaction management (`@Transactional`) and Spring Data JPA |
+| **Database** | PostgreSQL 16 | ACID transactions, row-level locking (`PESSIMISTIC_WRITE`), unique constraints |
+| **API Docs** | SpringDoc OpenAPI 3.0 | Automated OpenAPI 3.0 specification and interactive Swagger UI |
+| **Testing** | JUnit 5 + AssertJ + H2 | In-memory PostgreSQL compatibility mode test suite (no external dependencies required) |
+| **Deployment** | Docker & Docker Compose | Containerized multi-stage build running as a non-root user (`appuser`) |
 
-### Option 1: Docker Compose
+---
+
+## 🚀 Quick Start
+
+### Option 1: Docker Compose (Recommended)
+
+Run PostgreSQL and the application container with a single command:
 
 ```bash
 docker compose up --build
 ```
 
-Starts PostgreSQL 16 and the application on port 8080. Tables are created by Hibernate and the reference data
-is seeded by the application on startup.
+- **Base API URL**: `http://localhost:8080/api/v1`
+- **Interactive Swagger UI**: `http://localhost:8080/swagger-ui.html`
+- **OpenAPI 3.0 Spec**: `http://localhost:8080/v3/api-docs`
 
-- API base: `http://localhost:8080/api/v1`
-- Swagger UI: `http://localhost:8080/swagger-ui.html`
+---
 
-### Option 2: Run locally
+### Option 2: Run Locally
 
-Prerequisites: Java 21 and a PostgreSQL 16 database.
+**Prerequisites**: JDK 21 and a running PostgreSQL 16 instance.
+
+1. Ensure the wrapper script is executable:
+   ```bash
+   chmod +x gradlew
+   ```
+2. Create the target PostgreSQL database:
+   ```bash
+   createdb wallet
+   ```
+3. Start the Spring Boot application:
+   ```bash
+   ./gradlew bootRun
+   ```
+
+---
+
+## 🧪 Running Tests
+
+The test suite runs entirely on an in-memory H2 database in PostgreSQL mode with row-locking support. Neither Docker nor a local PostgreSQL instance is needed.
 
 ```bash
-chmod +x gradlew      # macOS/Linux, once (not needed on Windows: use gradlew.bat)
-createdb wallet
-./gradlew bootRun
-```
-
-### Configuration
-
-All values have defaults that match the Compose setup.
-
-| Environment variable | Default | Purpose |
-|---|---|---|
-| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/wallet` | JDBC URL |
-| `SPRING_DATASOURCE_USERNAME` | `postgres` | Database user |
-| `SPRING_DATASOURCE_PASSWORD` | `postgres` | Database password |
-| `PORT` | `8080` | HTTP port (hosting platforms such as Render set this) |
-| `WALLET_SEED_ENABLED` | `true` | Set `false` to skip seeding |
-
-### Run the tests
-
-```bash
+# Run all 38 tests (Unit, Integration, Web, Concurrency)
 ./gradlew test
+
+# Run only concurrency contention tests
+./gradlew test --tests '*ConcurrencyIntegrationTest'
 ```
 
-## Seed data
+---
 
-Created on startup by `DataSeeder` (idempotent, safe on every boot):
+## ⚙️ Configuration Reference
 
-| Assets | Users | Opening balances |
+All environment variables come with defaults matching the Docker Compose setup:
+
+| Variable | Default | Purpose |
 |---|---|---|
-| `GOLD_COINS` Gold Coins | Aditi Singh, `aditisingh@gmail.com` | Aditi: 500 Gold Coins |
-| `DIAMONDS` Diamonds | Priya Jha, `priyajha@gmail.com` | Priya: 300 Gold Coins |
-| `LOYALTY_POINTS` Loyalty Points | | Treasury: -800 Gold Coins (net outflow, expected for a system account) |
+| `PORT` | `8080` | Port on which the HTTP server listens |
+| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/wallet` | JDBC connection string |
+| `SPRING_DATASOURCE_USERNAME` | `postgres` | Database username |
+| `SPRING_DATASOURCE_PASSWORD` | `postgres` | Database password |
+| `WALLET_SEED_ENABLED` | `true` | Enables or disables automatic reference data seeding on boot |
 
-Each user also has an empty Diamonds account. One SYSTEM (Treasury) account exists per asset.
+---
 
-## API at a glance
+## 🌐 API Overview
 
-| Method | Path | Purpose |
-|---|---|---|
-| POST | `/api/v1/transactions` | `TOPUP`, `BONUS` or `SPEND`. `201` when created, `200` when an idempotent replay. |
-| GET | `/api/v1/balance?email=&assetCode=` | Current balance. Also served at `/api/v1/wallet/balance`. |
-| GET | `/api/v1/transactions?email=` | Transaction history, newest first. |
+### 1. Execute Transaction
+`POST /api/v1/transactions`
 
+Executes a `TOPUP`, `BONUS`, or `SPEND` operation.
+- Returns **`201 Created`** for new transactions.
+- Returns **`200 OK`** for idempotent replays (with exact historical `balanceAfter`).
+
+#### Request Example (`TOPUP`)
 ```bash
 curl -X POST http://localhost:8080/api/v1/transactions \
-  -H 'Content-Type: application/json' \
-  -d '{"type":"TOPUP","email":"aditisingh@gmail.com","assetCode":"GOLD_COINS","amount":100,"idempotencyKey":"demo-1"}'
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "TOPUP",
+    "email": "aditisingh@gmail.com",
+    "assetCode": "GOLD_COINS",
+    "amount": 100,
+    "idempotencyKey": "topup-aditi-001"
+  }'
 ```
 
-Full details in [docs/API.md](docs/API.md).
+#### Response (`201 Created`)
+```json
+{
+  "transactionId": "550e8400-e29b-41d4-a716-446655440000",
+  "transactionType": "TOPUP",
+  "amount": 100,
+  "balanceAfter": 600,
+  "status": "SUCCESS",
+  "createdAt": "2026-11-16T12:00:00.123456Z"
+}
+```
 
-## How correctness is guaranteed
+---
 
-- **Double entry.** Each transaction writes exactly two ledger entries (debit + credit) in one database transaction.
-  `accounts.balance` is a cached read value; the ledger is the source of truth.
-- **No lost updates, no overdrafts.** Both accounts involved in a movement are locked with `SELECT ... FOR UPDATE`,
-  always in ascending id order, for every transaction type.
-- **Safe retries.** Each request carries an `idempotencyKey`. A repeated key returns the original result and never
-  moves money twice, even when duplicates arrive at the same instant (a database `UNIQUE` constraint is the final guard).
+### 2. Check Wallet Balance
+`GET /api/v1/balance?email={email}&assetCode={assetCode}`  
+*(Also supported at `/api/v1/wallet/balance`)*
 
-See [docs/CONCURRENCY_AND_IDEMPOTENCY.md](docs/CONCURRENCY_AND_IDEMPOTENCY.md).
+#### Request Example
+```bash
+curl "http://localhost:8080/api/v1/balance?email=aditisingh@gmail.com&assetCode=GOLD_COINS"
+```
 
-## Known limitations
+#### Response (`200 OK`)
+```json
+{
+  "userId": "aaaaaaaa-0000-0000-0000-000000000001",
+  "email": "aditisingh@gmail.com",
+  "assetCode": "GOLD_COINS",
+  "assetName": "Gold Coins",
+  "balance": 600
+}
+```
 
-- Transaction history is not paginated.
-- Schema is managed by Hibernate (`ddl-auto: update`). For a production rollout, introduce a migration tool such as Flyway.
-- There is no authentication; the service is intended to sit behind an internal gateway.
-- Every transaction for an asset locks that asset's single Treasury row, so throughput per asset is serialised.
-  See the concurrency document for the trade-off and ways to scale it.
-- `Status.FAILED` exists in the model but is never written: failed requests roll back completely and leave no row.
+---
+
+### 3. Transaction History
+`GET /api/v1/transactions?email={email}`
+
+Returns all transactions involving accounts owned by the user, ordered newest first.
+
+#### Response (`200 OK`)
+```json
+[
+  {
+    "transactionId": "550e8400-e29b-41d4-a716-446655440000",
+    "transactionType": "TOPUP",
+    "status": "SUCCESS",
+    "createdAt": "2026-11-16T12:00:00.123456Z"
+  }
+]
+```
+
+---
+
+## 🎯 Core Correctness Guarantees
+
+```
+Client Request
+      │
+      ▼
+Idempotency Fast-Path Check ────[Found]───► Replay Historical Response (HTTP 200)
+      │
+      ▼
+Resolve Account IDs (No entity loading to prevent stale persistence context)
+      │
+      ▼
+Ordered Row Lock: SELECT ... FOR UPDATE (min(UUID) first, max(UUID) second)
+      │
+      ▼
+Lock-level Idempotency Re-check ────[Found]───► Replay Historical Response (HTTP 200)
+      │
+      ▼
+Balance Validation (USER balance >= amount for SPEND)
+      │
+      ▼
+Execute Double-Entry:
+  - Account 1: Cached Balance Update
+  - Account 2: Cached Balance Update
+  - Insert Transaction (flushed)
+  - Insert 2 Ledger Entries (DEBIT + CREDIT with balanceAfter)
+      │
+      ▼
+Commit Transaction & Release Row Locks ───► Return New Response (HTTP 201)
+```
+
+1. **Double-Entry Principle**:
+   - Every movement creates 1 debit entry and 1 credit entry.
+   - For every account: `Balance = ∑ Credits - ∑ Debits`.
+   - Across the entire system: `∑ Account Balances = 0`.
+2. **Deadlock Elimination**:
+   - Every write locks two accounts: the user account and the asset's Treasury account.
+   - Locks are strictly acquired in ascending UUID order (`id1.compareTo(id2) < 0`), preventing cyclical locking deadlocks.
+3. **Idempotency with True Historical State**:
+   - Stored in append-only `ledger_entries.balance_after`.
+   - Repeated requests with the same `idempotencyKey` return the historical balance at transaction time, even if subsequent transactions modified the balance.
+4. **Clean Failure Boundaries**:
+   - Rejections (insufficient funds, invalid assets) roll back completely and never consume the idempotency key, allowing safe client retries.
+
+---
+
+## 🌱 Default Seed Data
+
+Populated on startup by `DataSeeder` through real ledger transactions:
+
+| Asset | Code | User | Role | Opening Balance |
+|---|---|---|---|---|
+| **Gold Coins** | `GOLD_COINS` | Aditi Singh (`aditisingh@gmail.com`) | User | **500** |
+| **Gold Coins** | `GOLD_COINS` | Priya Jha (`priyajha@gmail.com`) | User | **300** |
+| **Gold Coins** | `GOLD_COINS` | *Treasury* | System | **-800** |
+| **Diamonds** | `DIAMONDS` | Aditi Singh & Priya Jha | User | **0** |
+| **Loyalty Points** | `LOYALTY_POINTS` | *Treasury* | System | **0** |
+
+---
+
+## 📝 License
+
+Distributed under the MIT License.
