@@ -23,12 +23,12 @@
 ## 📸 Web UI Preview
 
 | Dashboard (`/`) | New Transaction (`/transactions/new`) |
-|---|---|
-| *(Screenshot placeholder: Asset balances and recent activity in soft-light glass theme)* | *(Screenshot placeholder: Transaction execution form with active idempotency key)* |
+|:---:|:---:|
+| [![Dashboard](Screenshot/Dashboard.png)](Screenshot/Dashboard.png)<br><sub>*Real-time asset balances, active user switcher, and recent activity log.*</sub> | [![New Transaction](Screenshot/New%20Transaction.png)](Screenshot/New%20Transaction.png)<br><sub>*Interactive execution form with client idempotency key generation.*</sub> |
 
 | History (`/history`) | Ledger Audit (`/audit`) |
-|---|---|
-| *(Screenshot placeholder: Paginated transaction audit log with status badges)* | *(Screenshot placeholder: Real-time double-entry reconciliation verifying ∑ = 0)* |
+|:---:|:---:|
+| [![History](Screenshot/History.png)](Screenshot/History.png)<br><sub>*Paginated ledger audit log with status badges and transaction details.*</sub> | [![Ledger Audit](Screenshot/LadgerAudit.png)](Screenshot/LadgerAudit.png)<br><sub>*Real-time double-entry reconciliation verifying system balance (&sum; = 0).*</sub> |
 
 ---
 

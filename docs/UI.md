@@ -133,6 +133,9 @@ To deliver a calm, organic fintech feel without visual clutter:
 ## 🖥️ Pages & User Flows
 
 ### 1. Dashboard (`/`)
+
+[![Dashboard Preview](../Screenshot/Dashboard.png)](../Screenshot/Dashboard.png)
+
 - **User Selector**: Header dropdown populated dynamically from `GET /api/v1/users`. Remembers the selected user in `localStorage` (`vaultcore-selected-user`).
 - **Asset Balance Cards**: Real-time display of credit balances across all active assets with dedicated vector asset icons:
   - 🪙 **Gold Coins**: Metallic gold coin badge with coin notch.
@@ -142,6 +145,9 @@ To deliver a calm, organic fintech feel without visual clutter:
 - **Recent Activity**: Displays the 5 most recent transactions with asset name, asset code subtitle, credit/debit indicators, breathing status dots, and local timestamps.
 
 ### 2. New Transaction (`/transactions/new`)
+
+[![New Transaction Preview](../Screenshot/New%20Transaction.png)](../Screenshot/New%20Transaction.png)
+
 A form allowing users to execute `TOPUP`, `BONUS`, or `SPEND` transactions:
 - **Segmented Type Control**: Modern iOS/macOS style segmented radio control (`TOPUP (Credit)`, `BONUS (Grant)`, `SPEND (Debit)`).
 - **Accessible Form Controls**: 44px minimum touch targets, 2px focus ring with translucent indigo halo, and inline validation alerts.
@@ -154,11 +160,17 @@ A form allowing users to execute `TOPUP`, `BONUS`, or `SPEND` transactions:
   - `Network Failure`: Red error banner explaining connection loss, preserving the idempotency key for safe retries.
 
 ### 3. Transaction History (`/history`)
+
+[![Transaction History Preview](../Screenshot/History.png)](../Screenshot/History.png)
+
 - **Complete User Log**: Tabular view of all ledger transactions touching accounts owned by the selected user.
 - **Visual Distinctions**: Zebra striping, sticky table headers, colored transaction type badges, credit (`+`) vs debit (`-`) indicators, and local datetime formatting via JavaScript.
 - **Pill Pagination**: Glass pill pagination controls supporting server-side pagination with "Previous" and "Next" buttons.
 
 ### 4. Ledger Integrity & Audit (`/audit`)
+
+[![Ledger Audit Preview](../Screenshot/LadgerAudit.png)](../Screenshot/LadgerAudit.png)
+
 - **System Invariant Check**: Proves in real time that &sum; Balances across all accounts equals 0.
 - **Treasury Overview**: Displays the negative balance of system accounts for each asset, representing total circulating liabilities.
 - **Full Account Reconciliation**: Tabular comparison of every account's cached balance against the ledger sum (`SELECT SUM(amount)`). Reconciled rows display verified chips: `✓ Reconciled` (green) or `✕ Mismatch` (red).
