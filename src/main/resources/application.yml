@@ -3,10 +3,10 @@ server:
 
 spring:
   application:
-    name: internalWallet
+    name: vaultcore
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/wallet}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/vaultcore}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
@@ -24,7 +24,8 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+    custom-css-path: /css/swagger-custom.css
 
-wallet:
+vaultcore:
   seed:
-    enabled: ${WALLET_SEED_ENABLED:true}
+    enabled: ${VAULTCORE_SEED_ENABLED:${WALLET_SEED_ENABLED:true}}

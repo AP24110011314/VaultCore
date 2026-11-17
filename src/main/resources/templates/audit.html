@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{layout :: htmlhead('Ledger Audit')}"></head>
+<body>
+
+<header th:replace="~{layout :: header('audit')}"></header>
+
+<main id="main" class="main-content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Ledger Integrity &amp; Audit</h1>
+      <p class="page-subtitle">
+        Real-time double-entry verification proving the ledger invariant &sum; Balances = 0 and cache consistency.
+      </p>
+    </div>
+    <div>
+      <a th:href="@{/audit}" class="btn btn-secondary">
+        &#x21bb; Refresh Audit
+      </a>
+    </div>
+  </div>
+
+  <!-- Invariant Status Banners -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+    <!-- System Balance Sum Invariant -->
+    <div class="card glass animate-enter" style="--i: 0;">
+      <div class="card-header">
+        <span class="card-title">System Invariant (&sum; Balances)</span>
+        <span class="badge"
+              th:classappend="${audit.systemBalancesToZero ? 'badge-success' : 'badge-failed'}">
+          <span th:if="${audit.systemBalancesToZero}" class="breathing-dot" aria-hidden="true"></span>
+          <span th:text="${audit.systemBalancesToZero ? '&sum; = 0 OK' : 'IMBALANCE'}">&sum; = 0 OK</span>
+        </span>
+      </div>
+      <div class="balance-value count-up"
+           th:classappend="${audit.systemBalancesToZero ? 'amount-credit' : 'amount-debit'}"
+           th:attr="data-target=${audit.systemTotalBalance}"
+           th:text="${audit.systemTotalBalance}">
+        0
+      </div>
+      <div class="card-footer">
+        Every credit is backed by an equal debit across the entire ledger.
+      </div>
+    </div>
+
+    <!-- Cache vs Ledger Invariant -->
+    <div class="card glass animate-enter" style="--i: 1;">
+      <div class="card-header">
+        <span class="card-title">Account Reconciliation</span>
+        <span class="badge"
+              th:classappend="${audit.allReconciled ? 'badge-success' : 'badge-failed'}">
+          <span th:if="${audit.allReconciled}" class="breathing-dot" aria-hidden="true"></span>
+          <span th:text="${audit.allReconciled ? 'ALL MATCH' : 'DISCREPANCY'}">ALL MATCH</span>
+        </span>
+      </div>
+      <div class="balance-value" style="color: var(--ink);">
+        <span class="count-up" th:attr="data-target=${#lists.size(audit.accounts)}" th:text="${#lists.size(audit.accounts)}">5</span>
+        <span style="font-size: 1rem; font-weight: 500; color: var(--muted);">accounts verified</span>
+      </div>
+      <div class="card-footer">
+        100% of cached account balances equal &sum;(ledger entries).
+      </div>
+    </div>
+  </div>
+
+  <!-- Treasury Balances Section -->
+  <section aria-labelledby="treasuryHeading" style="margin-bottom: 2.5rem;">
+    <h2 id="treasuryHeading" style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem; color: var(--ink);">
+      Treasury Accounts (System Issuance)
+    </h2>
+    <div class="cards-grid">
+      <div th:each="t, iterStat : ${audit.treasuryBalances}"
+           class="card glass animate-enter"
+           th:style="'--i: ' + ${iterStat.index + 2}">
+        <div class="card-header">
+          <div class="card-title-group">
+            <th:block th:if="${t.assetCode == 'GOLD_COINS'}">
+              <svg class="card-asset-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="9.5" fill="#F7E2B8" stroke="#F2A93B" stroke-width="1.5" />
+                <circle cx="12" cy="12" r="7" fill="none" stroke="#8A4B08" stroke-width="1" stroke-dasharray="2 2" />
+                <text x="12" y="15.5" font-size="10" font-weight="800" text-anchor="middle" fill="#8A4B08" font-family="sans-serif">G</text>
+              </svg>
+            </th:block>
+            <th:block th:if="${t.assetCode == 'DIAMONDS'}">
+              <svg class="card-asset-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <polygon points="6,3 18,3 22,9 12,21 2,9" fill="#D6E2FB" stroke="#1D4ED8" stroke-width="1.5" stroke-linejoin="round" />
+                <polyline points="2,9 22,9" stroke="#1D4ED8" stroke-width="1.2" />
+                <polyline points="6,3 12,9 18,3" stroke="#1D4ED8" stroke-width="1.2" />
+                <polyline points="12,21 12,9" stroke="#1D4ED8" stroke-width="1.2" />
+              </svg>
+            </th:block>
+            <th:block th:if="${t.assetCode == 'LOYALTY_POINTS'}">
+              <svg class="card-asset-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="#C9EBD4" stroke="#166534" stroke-width="1.5" stroke-linejoin="round" />
+              </svg>
+            </th:block>
+            <th:block th:if="${t.assetCode != 'GOLD_COINS' and t.assetCode != 'DIAMONDS' and t.assetCode != 'LOYALTY_POINTS'}">
+              <svg class="card-asset-icon" viewBox="0 0 24 24" fill="none" stroke="#27337A" stroke-width="1.5" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" fill="rgba(39, 51, 122, 0.12)" />
+                <text x="12" y="16" font-size="11" font-weight="700" text-anchor="middle" fill="#27337A">★</text>
+              </svg>
+            </th:block>
+            <span class="card-title" th:text="${t.assetName}">Gold Coins</span>
+          </div>
+          <span class="card-code-chip" th:text="${t.assetCode}">GOLD_COINS</span>
+        </div>
+        <div class="balance-value count-up"
+             th:attr="data-target=${t.balance}"
+             th:classappend="${t.balance < 0 ? 'amount-debit' : 'amount-credit'}"
+             th:text="${#numbers.formatInteger(t.balance, 1, 'COMMA')}">
+          -800
+        </div>
+        <div class="card-footer">
+          Negative balance represents total issued currency in circulation.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Detailed Account Reconciliation Table -->
+  <section aria-labelledby="auditDetailsHeading">
+    <h2 id="auditDetailsHeading" style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem; color: var(--ink);">
+      Account Ledger Reconciliation Details
+    </h2>
+
+    <div class="table-container glass animate-enter" style="--i: 3;">
+      <table class="table" aria-label="Account Reconciliation Table">
+        <thead>
+          <tr>
+            <th scope="col">Type</th>
+            <th scope="col">Owner</th>
+            <th scope="col">Asset</th>
+            <th scope="col">Cached Balance</th>
+            <th scope="col">Ledger Sum (&sum; Credits - &sum; Debits)</th>
+            <th scope="col">Reconciliation Status</th>
+            <th scope="col">Account ID</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="acc : ${audit.accounts}">
+            <td>
+              <span class="badge"
+                    th:classappend="${acc.accountType.name() == 'SYSTEM' ? 'badge-spend' : 'badge-topup'}"
+                    th:text="${acc.accountType}">
+                USER
+              </span>
+            </td>
+            <td>
+              <strong th:text="${acc.owner}">aditisingh@gmail.com</strong>
+            </td>
+            <td>
+              <span class="asset-name"
+                    th:text="${acc.assetCode == 'GOLD_COINS' ? 'Gold Coins' : (acc.assetCode == 'DIAMONDS' ? 'Diamonds' : (acc.assetCode == 'LOYALTY_POINTS' ? 'Loyalty Points' : acc.assetCode))}">Gold Coins</span>
+              <span class="asset-code-sub" th:text="${acc.assetCode}">GOLD_COINS</span>
+            </td>
+            <td>
+              <span style="font-family: var(--font-mono); font-weight: 700;"
+                    th:text="${#numbers.formatInteger(acc.cachedBalance, 1, 'COMMA')}">
+                500
+              </span>
+            </td>
+            <td>
+              <span style="font-family: var(--font-mono); font-weight: 700;"
+                    th:text="${#numbers.formatInteger(acc.ledgerBalance, 1, 'COMMA')}">
+                500
+              </span>
+            </td>
+            <td>
+              <span class="badge"
+                    th:classappend="${acc.reconciled ? 'badge-success' : 'badge-failed'}">
+                <span th:if="${acc.reconciled}" class="breathing-dot" aria-hidden="true"></span>
+                <span th:text="${acc.reconciled ? '&#x2713; Reconciled' : '&#x2715; Mismatch'}">&#x2713; Reconciled</span>
+              </span>
+            </td>
+            <td>
+              <code style="font-size: 0.75rem; color: var(--muted); font-family: var(--font-mono);" th:text="${acc.accountId}">
+                aaaaaaaa-0000-0000-0000-000000000001
+              </code>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

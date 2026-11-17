@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{layout :: htmlhead('System Error')}"></head>
+<body>
+
+<header th:replace="~{layout :: header('error')}"></header>
+
+<main id="main" class="main-content">
+  <div class="card glass empty-state animate-enter" style="max-width: 600px; margin: 3rem auto; --i: 1;">
+    <div class="empty-state-icon" aria-hidden="true">⚠️</div>
+    <h1 class="empty-state-title" style="font-size: 1.5rem;">Unexpected Error</h1>
+    <p style="margin-top: 0.75rem; color: var(--muted); font-size: 0.9375rem;" th:text="${message != null ? message : 'An unexpected error occurred while processing your request in VaultCore.'}">
+      An unexpected error occurred while processing your request in VaultCore.
+    </p>
+    <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
+      <a th:href="@{/}" class="btn btn-primary">
+        &larr; Return to Dashboard
+      </a>
+      <a th:href="@{/audit}" class="btn btn-secondary">
+        Check Ledger Audit
+      </a>
+    </div>
+  </div>
+</main>
+
+<footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

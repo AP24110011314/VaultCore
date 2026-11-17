@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{layout :: htmlhead('New Transaction')}"></head>
+<body>
+
+<header th:replace="~{layout :: header('new-transaction')}"></header>
+
+<main id="main" class="main-content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Execute Transaction</h1>
+      <p class="page-subtitle">
+        Perform double-entry ledger transactions with zero lost updates and strict idempotency.
+      </p>
+    </div>
+  </div>
+
+  <div class="form-card glass animate-enter" style="--i: 1;">
+    <!-- ARIA Live Outcome Alert (201 Created / 200 Replay / 400 Insufficient Balance / 404 / Network) -->
+    <div id="outcomeAlert" class="alert" role="alert" aria-live="polite" style="display: none;"></div>
+
+    <form id="transactionForm" novalidate>
+      <!-- Hidden Idempotency Key managed by vaultcore.js -->
+      <input type="hidden" id="idempotencyKey" name="idempotencyKey" value="" />
+
+      <!-- Transaction Type Segmented Control -->
+      <div class="form-group">
+        <label class="form-label">Transaction Type <span style="color:var(--danger);">*</span></label>
+        <div class="segmented-control" role="radiogroup" aria-label="Transaction Type">
+          <div class="segmented-option">
+            <input type="radio" id="typeTopup" name="type" value="TOPUP" checked>
+            <label for="typeTopup" class="segmented-label">TOPUP (Credit)</label>
+          </div>
+          <div class="segmented-option">
+            <input type="radio" id="typeBonus" name="type" value="BONUS">
+            <label for="typeBonus" class="segmented-label">BONUS (Grant)</label>
+          </div>
+          <div class="segmented-option">
+            <input type="radio" id="typeSpend" name="type" value="SPEND">
+            <label for="typeSpend" class="segmented-label">SPEND (Debit)</label>
+          </div>
+        </div>
+        <div id="transactionTypeError" class="form-error-inline" aria-live="polite"></div>
+        <p class="form-help">TOPUP &amp; BONUS credit the user from Treasury; SPEND debits the user and requires sufficient balance.</p>
+      </div>
+
+      <!-- User Selection -->
+      <div class="form-group">
+        <label for="userEmail" class="form-label">User Account <span style="color:var(--danger);">*</span></label>
+        <select id="userEmail" name="email" class="form-control" required>
+          <option value="" disabled>-- Select Target User --</option>
+          <option th:each="u : ${users}"
+                  th:value="${u.email}"
+                  th:text="${u.name + ' (' + u.email + ')'}"
+                  th:selected="${u.email == selectedEmail}">
+            Aditi Singh (aditisingh@gmail.com)
+          </option>
+        </select>
+        <div id="userEmailError" class="form-error-inline" aria-live="polite"></div>
+      </div>
+
+      <!-- Asset Code -->
+      <div class="form-group">
+        <label for="assetCode" class="form-label">Asset Currency <span style="color:var(--danger);">*</span></label>
+        <select id="assetCode" name="assetCode" class="form-control" required>
+          <option value="" disabled>-- Select Asset --</option>
+          <option th:each="a : ${assets}"
+                  th:value="${a.code}"
+                  th:text="${a.name + ' (' + a.code + ')'}"
+                  th:selected="${a.code == 'GOLD_COINS'}">
+            Gold Coins (GOLD_COINS)
+          </option>
+        </select>
+        <div id="assetCodeError" class="form-error-inline" aria-live="polite"></div>
+      </div>
+
+      <!-- Amount -->
+      <div class="form-group">
+        <label for="amount" class="form-label">Amount <span style="color:var(--danger);">*</span></label>
+        <input type="number"
+               id="amount"
+               name="amount"
+               class="form-control"
+               min="1"
+               step="1"
+               placeholder="Enter whole amount (e.g. 100)"
+               required />
+        <div id="amountError" class="form-error-inline" aria-live="polite"></div>
+        <p class="form-help">Whole units only. Virtual currency is indivisible.</p>
+      </div>
+
+      <!-- Idempotency Key Status & Info -->
+      <div class="form-group glass" style="padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap;">
+          <div>
+            <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.04em;">
+              Active Idempotency Key:
+            </span>
+            <br />
+            <code id="keyDisplay" style="font-size: 0.8125rem; font-family: var(--font-mono); color: var(--amber-text); word-break: break-all; font-weight: 700;">
+              generating...
+            </code>
+          </div>
+          <button type="button" id="regenerateKeyBtn" class="btn btn-secondary" style="font-size: 0.75rem; min-height: 32px; padding: 0.3rem 0.75rem;">
+            New Key
+          </button>
+        </div>
+        <p class="form-help" style="margin-top: 0.5rem;">
+          Protected against network timeouts. If a network interruption occurs, the client reuses this exact key so no duplicate charge is applied.
+        </p>
+      </div>
+
+      <!-- Submit Button -->
+      <div style="margin-top: 1.75rem;">
+        <button type="submit" id="submitTxBtn" class="btn btn-primary btn-block">
+          Submit Transaction
+        </button>
+      </div>
+    </form>
+  </div>
+</main>
+
+<footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

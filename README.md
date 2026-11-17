@@ -1,6 +1,10 @@
-# 🏦 Internal Wallet Service
+# 🏦 VaultCore
 
-> A high-performance, double-entry virtual credit ledger service built with **Java 21**, **Spring Boot 4**, and **PostgreSQL 16**. Designed for gaming platforms, loyalty programmes, and internal credits with strict transactional integrity, zero-lost-update concurrency, and idempotent execution.
+<p align="center">
+  <img src="src/main/resources/static/img/vaultcore-logo.svg" alt="VaultCore Logo" width="280" />
+</p>
+
+> A high-performance, double-entry virtual credit ledger service built with **Java 21**, **Spring Boot 4**, and **PostgreSQL 16**. Designed for gaming platforms, loyalty programmes, and internal credits with strict transactional integrity, zero-lost-update concurrency, idempotent execution, and a responsive web UI.
 
 ---
 
@@ -9,8 +13,22 @@
 - ⚖️ **Double-Entry Bookkeeping**: Every transaction creates balanced credit and debit ledger entries. The system always balances to zero (`∑ balances == 0`).
 - 🔒 **Deadlock-Free Row-Level Locking**: Pessimistic write locks (`SELECT ... FOR UPDATE`) acquired in strict ascending UUID order across all operations (`TOPUP`, `BONUS`, `SPEND`).
 - ⚡ **Strict Idempotency**: Fast-path cache lookup, lock-level recheck, and database unique constraints guarantee that duplicate requests return original results with HTTP `200 OK` without applying side-effects twice.
-- 🚀 **Production-Ready Docker**: Multi-stage lightweight Alpine build running under a non-root security profile.
-- 🧪 **100% Tested**: Comprehensive 38-test test suite covering unit math, integration flows, seeder idempotency, REST APIs, and 20-thread concurrency contention.
+- 🎨 **Server-Rendered Web UI**: Full-featured Thymeleaf UI with a soft-light glassmorphic theme, user switcher, real-time balance cards with count-up animations, transaction forms with client idempotency key generation, paginated history, and a live ledger audit dashboard.
+- 🚀 **Offline-First & CDN-Free**: All styles, icons, logos, and scripts are self-contained in the repository with zero external CDN or npm dependencies.
+- 🐳 **Production-Ready Docker**: Multi-stage lightweight Alpine build running under a non-root security profile (`appuser`).
+- 🧪 **100% Tested**: Comprehensive 55-test test suite covering unit math, integration flows, seeder idempotency, REST APIs, UI controllers, and 20-thread concurrency contention.
+
+---
+
+## 📸 Web UI Preview
+
+| Dashboard (`/`) | New Transaction (`/transactions/new`) |
+|---|---|
+| *(Screenshot placeholder: Asset balances and recent activity in soft-light glass theme)* | *(Screenshot placeholder: Transaction execution form with active idempotency key)* |
+
+| History (`/history`) | Ledger Audit (`/audit`) |
+|---|---|
+| *(Screenshot placeholder: Paginated transaction audit log with status badges)* | *(Screenshot placeholder: Real-time double-entry reconciliation verifying ∑ = 0)* |
 
 ---
 
@@ -18,13 +36,14 @@
 
 | Guide | Description |
 |---|---|
+| 🎨 [**Web UI & Identity**](docs/UI.md) | Pages, user flows, theming system, logo design, and browser idempotency lifecycle. |
 | 🏛️ [**Architecture**](docs/ARCHITECTURE.md) | System layers, request lifecycles, design rationale, and enhancements over legacy systems. |
 | 🗄️ [**Database & Ledger**](docs/DATABASE.md) | Entity schemas, constraints, invariants, audit queries, and seed data. |
 | 🔌 [**API Reference**](docs/API.md) | Endpoints, JSON payloads, HTTP status codes, error models, and curl examples. |
 | 🛡️ [**Concurrency & Idempotency**](docs/CONCURRENCY_AND_IDEMPOTENCY.md) | Locking hierarchy, deadlock prevention, race recovery, and performance trade-offs. |
-| 🧪 [**Testing Strategy**](docs/TESTING.md) | Unit, integration, web slice, and multithreaded concurrency tests. |
+| 🧪 [**Testing Strategy**](docs/TESTING.md) | Unit, integration, web slice, UI template, and multithreaded concurrency tests. |
 | 📋 [**Implementation Plan**](docs/IMPLEMENTATION_PLAN.md) | Staged milestone roadmap and definitions of done. |
-| 📜 [**Commit History Plan**](docs/COMMIT_PLAN.md) | 16 milestone development commits with command blueprints. |
+| 📜 [**Commit History Plan**](docs/COMMIT_PLAN.md) | Milestone development commits with exact git command blueprints. |
 
 ---
 
@@ -34,8 +53,9 @@
 |---|---|---|
 | **Language** | Java 21 (LTS) | Modern language features, records for immutable DTOs, clean architecture |
 | **Framework** | Spring Boot 4.0.2 | Declarative transaction management (`@Transactional`) and Spring Data JPA |
+| **Templates** | Thymeleaf 3 | Server-rendered semantic HTML with offline CSS and vanilla JavaScript |
 | **Database** | PostgreSQL 16 | ACID transactions, row-level locking (`PESSIMISTIC_WRITE`), unique constraints |
-| **API Docs** | SpringDoc OpenAPI 3.0 | Automated OpenAPI 3.0 specification and interactive Swagger UI |
+| **API Docs** | SpringDoc OpenAPI 3.0 | Automated OpenAPI 3.0 specification and customized Swagger UI |
 | **Testing** | JUnit 5 + AssertJ + H2 | In-memory PostgreSQL compatibility mode test suite (no external dependencies required) |
 | **Deployment** | Docker & Docker Compose | Containerized multi-stage build running as a non-root user (`appuser`) |
 
@@ -51,7 +71,11 @@ Run PostgreSQL and the application container with a single command:
 docker compose up --build
 ```
 
-- **Base API URL**: `http://localhost:8080/api/v1`
+- **VaultCore Web UI**: `http://localhost:8080/`
+- **New Transaction Form**: `http://localhost:8080/transactions/new`
+- **Transaction History**: `http://localhost:8080/history`
+- **Ledger Audit & Reconciliation**: `http://localhost:8080/audit`
+- **Base REST API URL**: `http://localhost:8080/api/v1`
 - **Interactive Swagger UI**: `http://localhost:8080/swagger-ui.html`
 - **OpenAPI 3.0 Spec**: `http://localhost:8080/v3/api-docs`
 
@@ -67,7 +91,7 @@ docker compose up --build
    ```
 2. Create the target PostgreSQL database:
    ```bash
-   createdb wallet
+   createdb vaultcore
    ```
 3. Start the Spring Boot application:
    ```bash
@@ -81,8 +105,11 @@ docker compose up --build
 The test suite runs entirely on an in-memory H2 database in PostgreSQL mode with row-locking support. Neither Docker nor a local PostgreSQL instance is needed.
 
 ```bash
-# Run all 38 tests (Unit, Integration, Web, Concurrency)
+# Run all 55 tests (Unit, Integration, Web, UI, Concurrency)
 ./gradlew test
+
+# Run only UI tests
+./gradlew test --tests '*UiControllerTest'
 
 # Run only concurrency contention tests
 ./gradlew test --tests '*ConcurrencyIntegrationTest'
@@ -97,10 +124,10 @@ All environment variables come with defaults matching the Docker Compose setup:
 | Variable | Default | Purpose |
 |---|---|---|
 | `PORT` | `8080` | Port on which the HTTP server listens |
-| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/wallet` | JDBC connection string |
+| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/vaultcore` | JDBC connection string |
 | `SPRING_DATASOURCE_USERNAME` | `postgres` | Database username |
 | `SPRING_DATASOURCE_PASSWORD` | `postgres` | Database password |
-| `WALLET_SEED_ENABLED` | `true` | Enables or disables automatic reference data seeding on boot |
+| `VAULTCORE_SEED_ENABLED` | `true` | Enables or disables automatic reference data seeding on boot |
 
 ---
 
@@ -140,32 +167,25 @@ curl -X POST http://localhost:8080/api/v1/transactions \
 
 ---
 
-### 2. Check Wallet Balance
-`GET /api/v1/balance?email={email}&assetCode={assetCode}`  
-*(Also supported at `/api/v1/wallet/balance`)*
+### 2. Check Wallet Balances
+- Single asset: `GET /api/v1/balance?email={email}&assetCode={assetCode}` (also supported at `/api/v1/wallet/balance`)
+- All assets: `GET /api/v1/balances?email={email}`
 
-#### Request Example
-```bash
-curl "http://localhost:8080/api/v1/balance?email=aditisingh@gmail.com&assetCode=GOLD_COINS"
-```
-
-#### Response (`200 OK`)
+#### Response (`GET /api/v1/balances?email=aditisingh@gmail.com`)
 ```json
-{
-  "userId": "aaaaaaaa-0000-0000-0000-000000000001",
-  "email": "aditisingh@gmail.com",
-  "assetCode": "GOLD_COINS",
-  "assetName": "Gold Coins",
-  "balance": 600
-}
+[
+  { "assetCode": "GOLD_COINS", "assetName": "Gold Coins", "balance": 600 },
+  { "assetCode": "DIAMONDS", "assetName": "Diamonds", "balance": 0 },
+  { "assetCode": "LOYALTY_POINTS", "assetName": "Loyalty Points", "balance": 0 }
+]
 ```
 
 ---
 
 ### 3. Transaction History
-`GET /api/v1/transactions?email={email}`
+`GET /api/v1/transactions?email={email}&page={page}&size={size}`
 
-Returns all transactions involving accounts owned by the user, ordered newest first.
+Returns transactions involving accounts owned by the user, ordered newest first. Optional `page` and `size` parameters provide pagination while maintaining a plain array response format.
 
 #### Response (`200 OK`)
 ```json
@@ -173,11 +193,20 @@ Returns all transactions involving accounts owned by the user, ordered newest fi
   {
     "transactionId": "550e8400-e29b-41d4-a716-446655440000",
     "transactionType": "TOPUP",
+    "amount": 100,
+    "assetCode": "GOLD_COINS",
     "status": "SUCCESS",
     "createdAt": "2026-11-16T12:00:00.123456Z"
   }
 ]
 ```
+
+---
+
+### 4. Ledger Reconciliation Audit
+`GET /api/v1/audit/reconciliation`
+
+Verifies that the entire system balances to zero (`∑ balances == 0`), lists Treasury accounts, and proves that 100% of cached balances equal their ledger entry sums.
 
 ---
 

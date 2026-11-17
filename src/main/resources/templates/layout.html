@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:fragment="htmlhead(title)">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light">
+  <title th:text="${title != null ? title + ' - VaultCore' : 'VaultCore'}">VaultCore</title>
+  <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}">
+  <link rel="stylesheet" th:href="@{/css/vaultcore.css}">
+  <script defer th:src="@{/js/vaultcore.js}"></script>
+</head>
+<body>
+
+<!-- Ambient Drifting Glass Blobs (Part 2 & Part 4) -->
+<div class="bg-blobs" aria-hidden="true">
+  <div class="blob blob-indigo"></div>
+  <div class="blob blob-amber"></div>
+  <div class="blob blob-teal"></div>
+</div>
+
+<header th:fragment="header(activeNav)" class="header">
+  <a href="#main" class="skip-link">Skip to main content</a>
+  <div class="header-container">
+    <a th:href="@{/(email=${selectedEmail})}" class="brand-link" aria-label="VaultCore Home">
+      <!-- Inline SVG Logo so dial ring (.vault-dial-ring) can be animated via CSS (Part 5) -->
+      <svg class="brand-logo-svg" viewBox="0 0 240 56" width="180" height="42" role="img" aria-labelledby="headerLogoTitle">
+        <title id="headerLogoTitle">VaultCore</title>
+        <defs>
+          <linearGradient id="headerShieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#1E2B48" />
+            <stop offset="100%" stop-color="#0F1B33" />
+          </linearGradient>
+          <linearGradient id="headerDialGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#F5B042" />
+            <stop offset="100%" stop-color="#D97706" />
+          </linearGradient>
+          <linearGradient id="headerGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#FCD34D" />
+            <stop offset="100%" stop-color="#D97706" />
+          </linearGradient>
+        </defs>
+
+        <!-- Icon scaled to 48x48 placed at (4, 4) -->
+        <g transform="translate(4, 4) scale(0.75)">
+          <path d="M 32 5
+                   C 33.5 5, 34.8 5.7, 35.8 6.5
+                   L 53.5 17.5
+                   C 55.6 18.8, 57 21.2, 57 23.7
+                   L 57 40.3
+                   C 57 42.8, 55.6 45.2, 53.5 46.5
+                   L 35.8 57.5
+                   C 33.8 58.7, 30.2 58.7, 28.2 57.5
+                   L 10.5 46.5
+                   C 8.4 45.2, 7 42.8, 7 40.3
+                   L 7 23.7
+                   C 7 21.2, 8.4 18.8, 10.5 17.5
+                   L 28.2 6.5
+                   C 29.2 5.7, 30.5 5, 32 5 Z"
+                fill="url(#headerShieldGrad)"
+                stroke="#4A5A78"
+                stroke-width="1.5" />
+          <path d="M 12 22 L 32 9.5 L 52 22" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.2" stroke-linecap="round" />
+
+          <!-- Rotatable Dial Ring -->
+          <g class="vault-dial-ring" style="transform-origin: 32px 32px;">
+            <circle cx="32" cy="32" r="17"
+                    fill="none"
+                    stroke="url(#headerDialGrad)"
+                    stroke-width="2.2"
+                    stroke-dasharray="3 4" />
+            <rect x="30.75" y="12" width="2.5" height="4" rx="1" fill="#F2A93B" />
+            <rect x="30.75" y="48" width="2.5" height="4" rx="1" fill="#F2A93B" />
+            <rect x="12" y="30.75" width="4" height="2.5" rx="1" fill="#F2A93B" />
+            <rect x="48" y="30.75" width="4" height="2.5" rx="1" fill="#F2A93B" />
+          </g>
+
+          <circle cx="32" cy="32" r="13" fill="#0F1B33" stroke="url(#headerDialGrad)" stroke-width="1.8" />
+          <circle cx="32" cy="32" r="8.5" fill="url(#headerGoldGrad)" />
+          <circle cx="32" cy="30.5" r="2.5" fill="#0F1B33" />
+          <polygon points="30.3,31 33.7,31 34.3,35.5 29.7,35.5" fill="#0F1B33" />
+        </g>
+
+        <!-- Wordmark with Verified Contrast -->
+        <text x="60" y="34" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="28" font-weight="800" letter-spacing="-0.5" fill="#0F1B33">Vault<tspan fill="#8A4B08">Core</tspan></text>
+        <text x="61" y="47" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="600" letter-spacing="1.5" text-transform="uppercase" fill="#4A5A78">Ledger Service</text>
+      </svg>
+    </a>
+
+    <nav class="nav" aria-label="Main Navigation">
+      <a th:href="@{/(email=${selectedEmail})}" class="nav-link" th:classappend="${activeNav == 'dashboard'} ? 'active' : ''">Dashboard</a>
+      <a th:href="@{/transactions/new(email=${selectedEmail})}" class="nav-link" th:classappend="${activeNav == 'new-transaction'} ? 'active' : ''">New Transaction</a>
+      <a th:href="@{/history(email=${selectedEmail})}" class="nav-link" th:classappend="${activeNav == 'history'} ? 'active' : ''">History</a>
+      <a th:href="@{/audit}" class="nav-link" th:classappend="${activeNav == 'audit'} ? 'active' : ''">Ledger Audit</a>
+    </nav>
+
+    <div class="header-controls">
+      <div class="user-selector-wrapper" th:if="${users != null and !users.isEmpty()}">
+        <label for="globalUserSelector" class="user-selector-label">User:</label>
+        <select id="globalUserSelector" class="user-select" aria-label="Select user account">
+          <option th:each="u : ${users}"
+                  th:value="${u.email}"
+                  th:text="${u.name + ' (' + u.email + ')'}"
+                  th:selected="${u.email == selectedEmail}">
+            Aditi Singh
+          </option>
+        </select>
+      </div>
+    </div>
+  </div>
+</header>
+
+<footer th:fragment="footer" class="footer">
+  <div class="footer-inner">
+    <div>
+      <span class="footer-brand">VaultCore</span> &mdash; Double-Entry Virtual Credit Ledger
+    </div>
+    <div>
+      <a th:href="@{/swagger-ui.html}" class="nav-link" style="display:inline; padding:0 0.5rem;">Swagger API</a>
+      <a th:href="@{/v3/api-docs}" class="nav-link" style="display:inline; padding:0 0.5rem;">OpenAPI Spec</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

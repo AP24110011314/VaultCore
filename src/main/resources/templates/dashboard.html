@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{layout :: htmlhead('Dashboard')}"></head>
+<body>
+
+<header th:replace="~{layout :: header('dashboard')}"></header>
+
+<main id="main" class="main-content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Wallet Overview</h1>
+      <p class="page-subtitle" th:if="${selectedUser != null}">
+        Account balances and recent activity for
+        <strong th:text="${selectedUser.name}">User</strong> (<span th:text="${selectedUser.email}">email</span>)
+      </p>
+    </div>
+    <div>
+      <a th:href="@{/transactions/new(email=${selectedEmail})}" class="btn btn-primary">
+        + New Transaction
+      </a>
+    </div>
+  </div>
+
+  <!-- Asset Balance Cards Grid -->
+  <section aria-labelledby="balancesHeading" style="margin-bottom: 2.5rem;">
+    <h2 id="balancesHeading" style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem; color: var(--ink);">
+      Asset Balances
+    </h2>
+    <div class="cards-grid">
+      <div th:each="b, iterStat : ${balances}"
+           class="card glass animate-enter"
+           th:style="'--i: ' + ${iterStat.index}">
+        <div class="card-header">
+          <div class="card-title-group">
+            <!-- Asset Specific SVG Icons -->
+            <th:block th:if="${b.assetCode == 'GOLD_COINS'}">
+              <svg class="card-asset-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="9.5" fill="#F7E2B8" stroke="#F2A93B" stroke-width="1.5" />
+                <circle cx="12" cy="12" r="7" fill="none" stroke="#8A4B08" stroke-width="1" stroke-dasharray="2 2" />
+                <text x="12" y="15.5" font-size="10" font-weight="800" text-anchor="middle" fill="#8A4B08" font-family="sans-serif">G</text>
+              </svg>
+            </th:block>
+            <th:block th:if="${b.assetCode == 'DIAMONDS'}">
+              <svg class="card-asset-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <polygon points="6,3 18,3 22,9 12,21 2,9" fill="#D6E2FB" stroke="#1D4ED8" stroke-width="1.5" stroke-linejoin="round" />
+                <polyline points="2,9 22,9" stroke="#1D4ED8" stroke-width="1.2" />
+                <polyline points="6,3 12,9 18,3" stroke="#1D4ED8" stroke-width="1.2" />
+                <polyline points="12,21 12,9" stroke="#1D4ED8" stroke-width="1.2" />
+              </svg>
+            </th:block>
+            <th:block th:if="${b.assetCode == 'LOYALTY_POINTS'}">
+              <svg class="card-asset-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="#C9EBD4" stroke="#166534" stroke-width="1.5" stroke-linejoin="round" />
+              </svg>
+            </th:block>
+            <th:block th:if="${b.assetCode != 'GOLD_COINS' and b.assetCode != 'DIAMONDS' and b.assetCode != 'LOYALTY_POINTS'}">
+              <svg class="card-asset-icon" viewBox="0 0 24 24" fill="none" stroke="#27337A" stroke-width="1.5" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" fill="rgba(39, 51, 122, 0.12)" />
+                <text x="12" y="16" font-size="11" font-weight="700" text-anchor="middle" fill="#27337A">★</text>
+              </svg>
+            </th:block>
+            <span class="card-title" th:text="${b.assetName}">Gold Coins</span>
+          </div>
+          <span class="card-code-chip" th:text="${b.assetCode}">GOLD_COINS</span>
+        </div>
+        <div class="balance-value count-up"
+             th:attr="data-target=${b.balance}"
+             th:text="${#numbers.formatInteger(b.balance, 1, 'COMMA')}">
+          0
+        </div>
+        <div class="card-footer">
+          <span>Available credits in ledger</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recent Transactions Section -->
+  <section aria-labelledby="recentTxHeading">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+      <h2 id="recentTxHeading" style="font-size: 1.125rem; font-weight: 700; color: var(--ink);">
+        Recent Activity (Latest 5)
+      </h2>
+      <a th:href="@{/history(email=${selectedEmail})}" class="nav-link" style="font-size: 0.875rem;">
+        View full history &rarr;
+      </a>
+    </div>
+
+    <div class="table-container glass animate-enter" style="--i: 3;" th:if="${recentTransactions != null and !recentTransactions.isEmpty()}">
+      <table class="table" aria-label="Recent Transactions Table">
+        <thead>
+          <tr>
+            <th scope="col">Type</th>
+            <th scope="col">Asset</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Status</th>
+            <th scope="col">Date &amp; Time (Local)</th>
+            <th scope="col">Transaction ID</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="tx : ${recentTransactions}">
+            <td>
+              <span class="badge"
+                    th:classappend="${tx.transactionType.name() == 'TOPUP' ? 'badge-topup' : (tx.transactionType.name() == 'BONUS' ? 'badge-bonus' : 'badge-spend')}"
+                    th:text="${tx.transactionType}">
+                TOPUP
+              </span>
+            </td>
+            <td>
+              <span class="asset-name"
+                    th:text="${tx.assetCode == 'GOLD_COINS' ? 'Gold Coins' : (tx.assetCode == 'DIAMONDS' ? 'Diamonds' : (tx.assetCode == 'LOYALTY_POINTS' ? 'Loyalty Points' : (tx.assetCode != null ? tx.assetCode : '-')))}">Gold Coins</span>
+              <span class="asset-code-sub" th:text="${tx.assetCode}">GOLD_COINS</span>
+            </td>
+            <td>
+              <span th:class="${tx.transactionType.name() == 'SPEND' ? 'amount-debit' : 'amount-credit'}"
+                    th:text="${(tx.transactionType.name() == 'SPEND' ? '-' : '+') + (tx.amount != null ? #numbers.formatInteger(tx.amount, 1, 'COMMA') : '0')}">
+                +100
+              </span>
+            </td>
+            <td>
+              <span class="badge"
+                    th:classappend="${tx.status.name() == 'SUCCESS' ? 'badge-success' : 'badge-failed'}">
+                <span th:if="${tx.status.name() == 'SUCCESS'}" class="breathing-dot" aria-hidden="true"></span>
+                <span th:text="${tx.status}">SUCCESS</span>
+              </span>
+            </td>
+            <td>
+              <span class="tx-timestamp" th:attr="data-utc=${tx.createdAt}" th:text="${tx.createdAt}">
+                2026-11-18 12:00:00
+              </span>
+            </td>
+            <td>
+              <code style="font-size: 0.75rem; color: var(--muted); font-family: var(--font-mono);" th:text="${tx.transactionId}">
+                550e8400-e29b-41d4-a716-446655440000
+              </code>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div class="card glass empty-state animate-enter" style="--i: 3;" th:if="${recentTransactions == null or recentTransactions.isEmpty()}">
+      <div class="empty-state-icon" aria-hidden="true">📜</div>
+      <div class="empty-state-title">No transactions recorded yet</div>
+      <p style="font-size: 0.875rem; margin-top: 0.5rem;">
+        Execute your first Top-up or Bonus transaction to start moving virtual credits.
+      </p>
+      <div style="margin-top: 1rem;">
+        <a th:href="@{/transactions/new(email=${selectedEmail})}" class="btn btn-primary">
+          Create Transaction
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

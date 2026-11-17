@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="32" height="32" role="img" aria-labelledby="favTitle">
+  <title id="favTitle">VaultCore</title>
+  <defs>
+    <linearGradient id="favShield" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E2B48" />
+      <stop offset="100%" stop-color="#0F1B33" />
+    </linearGradient>
+    <linearGradient id="favGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FCD34D" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+  </defs>
+
+  <path d="M 32 5
+           C 33.5 5, 34.8 5.7, 35.8 6.5
+           L 53.5 17.5
+           C 55.6 18.8, 57 21.2, 57 23.7
+           L 57 40.3
+           C 57 42.8, 55.6 45.2, 53.5 46.5
+           L 35.8 57.5
+           C 33.8 58.7, 30.2 58.7, 28.2 57.5
+           L 10.5 46.5
+           C 8.4 45.2, 7 42.8, 7 40.3
+           L 7 23.7
+           C 7 21.2, 8.4 18.8, 10.5 17.5
+           L 28.2 6.5
+           C 29.2 5.7, 30.5 5, 32 5 Z"
+        fill="url(#favShield)"
+        stroke="#4A5A78"
+        stroke-width="2" />
+
+  <circle cx="32" cy="32" r="15" fill="#0F1B33" stroke="#F2A93B" stroke-width="2.5" />
+  <circle cx="32" cy="32" r="9.5" fill="url(#favGold)" />
+  <circle cx="32" cy="30.5" r="2.8" fill="#0F1B33" />
+  <polygon points="30,31 34,31 34.6,35.5 29.4,35.5" fill="#0F1B33" />
+</svg>

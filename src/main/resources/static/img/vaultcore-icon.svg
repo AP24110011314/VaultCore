@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="100%" height="100%" role="img" aria-labelledby="iconTitle">
+  <title id="iconTitle">VaultCore</title>
+  <defs>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E2B48" />
+      <stop offset="100%" stop-color="#0F1B33" />
+    </linearGradient>
+    <linearGradient id="dialGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F5B042" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <linearGradient id="coreGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FCD34D" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+  </defs>
+
+  <!-- Outer Rounded Shield -->
+  <path d="M 32 5
+           C 33.5 5, 34.8 5.7, 35.8 6.5
+           L 53.5 17.5
+           C 55.6 18.8, 57 21.2, 57 23.7
+           L 57 40.3
+           C 57 42.8, 55.6 45.2, 53.5 46.5
+           L 35.8 57.5
+           C 33.8 58.7, 30.2 58.7, 28.2 57.5
+           L 10.5 46.5
+           C 8.4 45.2, 7 42.8, 7 40.3
+           L 7 23.7
+           C 7 21.2, 8.4 18.8, 10.5 17.5
+           L 28.2 6.5
+           C 29.2 5.7, 30.5 5, 32 5 Z"
+        fill="url(#shieldGrad)"
+        stroke="#4A5A78"
+        stroke-width="1.5" />
+
+  <!-- Inner Top-Left Highlight Rim -->
+  <path d="M 12 22 L 32 9.5 L 52 22" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.2" stroke-linecap="round" />
+
+  <!-- Animated Rotating Vault Dial Group -->
+  <g class="vault-dial-ring" style="transform-origin: 32px 32px;">
+    <!-- Dial Ring -->
+    <circle cx="32" cy="32" r="17"
+            fill="none"
+            stroke="url(#dialGrad)"
+            stroke-width="2.2"
+            stroke-dasharray="3 4" />
+    <!-- 4 Cardinal Lugs -->
+    <rect x="30.75" y="12" width="2.5" height="4" rx="1" fill="#F2A93B" />
+    <rect x="30.75" y="48" width="2.5" height="4" rx="1" fill="#F2A93B" />
+    <rect x="12" y="30.75" width="4" height="2.5" rx="1" fill="#F2A93B" />
+    <rect x="48" y="30.75" width="4" height="2.5" rx="1" fill="#F2A93B" />
+  </g>
+
+  <!-- Central Chamber Rim -->
+  <circle cx="32" cy="32" r="13" fill="#0F1B33" stroke="url(#dialGrad)" stroke-width="1.8" />
+
+  <!-- Core Gold Medallion -->
+  <circle cx="32" cy="32" r="8.5" fill="url(#coreGoldGrad)" />
+
+  <!-- Keyhole / Coin Slot -->
+  <circle cx="32" cy="30.5" r="2.5" fill="#0F1B33" />
+  <polygon points="30.3,31 33.7,31 34.3,35.5 29.7,35.5" fill="#0F1B33" />
+</svg>

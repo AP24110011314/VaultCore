@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{layout :: htmlhead('Transaction History')}"></head>
+<body>
+
+<header th:replace="~{layout :: header('history')}"></header>
+
+<main id="main" class="main-content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Transaction History</h1>
+      <p class="page-subtitle" th:if="${selectedUser != null}">
+        Immutable audit log of all transactions for
+        <strong th:text="${selectedUser.name}">User</strong> (<span th:text="${selectedUser.email}">email</span>)
+      </p>
+    </div>
+    <div>
+      <a th:href="@{/transactions/new(email=${selectedEmail})}" class="btn btn-primary">
+        + New Transaction
+      </a>
+    </div>
+  </div>
+
+  <div class="table-container glass animate-enter" style="--i: 1;" th:if="${transactions != null and !transactions.isEmpty()}">
+    <table class="table" aria-label="Transaction History Table">
+      <thead>
+        <tr>
+          <th scope="col">Type</th>
+          <th scope="col">Asset</th>
+          <th scope="col">Amount</th>
+          <th scope="col">Status</th>
+          <th scope="col">Date &amp; Time (Local)</th>
+          <th scope="col">Transaction ID</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="tx : ${transactions}">
+          <td>
+            <span class="badge"
+                  th:classappend="${tx.transactionType.name() == 'TOPUP' ? 'badge-topup' : (tx.transactionType.name() == 'BONUS' ? 'badge-bonus' : 'badge-spend')}"
+                  th:text="${tx.transactionType}">
+              TOPUP
+            </span>
+          </td>
+          <td>
+            <span class="asset-name"
+                  th:text="${tx.assetCode == 'GOLD_COINS' ? 'Gold Coins' : (tx.assetCode == 'DIAMONDS' ? 'Diamonds' : (tx.assetCode == 'LOYALTY_POINTS' ? 'Loyalty Points' : (tx.assetCode != null ? tx.assetCode : '-')))}">Gold Coins</span>
+            <span class="asset-code-sub" th:text="${tx.assetCode}">GOLD_COINS</span>
+          </td>
+          <td>
+            <span th:class="${tx.transactionType.name() == 'SPEND' ? 'amount-debit' : 'amount-credit'}"
+                  th:text="${(tx.transactionType.name() == 'SPEND' ? '-' : '+') + (tx.amount != null ? #numbers.formatInteger(tx.amount, 1, 'COMMA') : '0')}">
+              +100
+            </span>
+          </td>
+          <td>
+            <span class="badge"
+                  th:classappend="${tx.status.name() == 'SUCCESS' ? 'badge-success' : 'badge-failed'}">
+              <span th:if="${tx.status.name() == 'SUCCESS'}" class="breathing-dot" aria-hidden="true"></span>
+              <span th:text="${tx.status}">SUCCESS</span>
+            </span>
+          </td>
+          <td>
+            <span class="tx-timestamp" th:attr="data-utc=${tx.createdAt}" th:text="${tx.createdAt}">
+              2026-11-18 12:00:00
+            </span>
+          </td>
+          <td>
+            <code style="font-size: 0.75rem; color: var(--muted); font-family: var(--font-mono);" th:text="${tx.transactionId}">
+              550e8400-e29b-41d4-a716-446655440000
+            </code>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination Controls -->
+  <nav class="pagination animate-enter" style="--i: 2;" aria-label="Transaction pagination" th:if="${totalCount > 0}">
+    <div class="pagination-info">
+      Showing <span th:text="${displayStart}">1</span>
+      to <span th:text="${displayEnd}">10</span>
+      of <span th:text="${totalCount}">50</span> transactions
+    </div>
+    <div class="pagination-controls">
+      <a th:if="${hasPrev}"
+         th:href="@{/history(email=${selectedEmail}, page=${currentPage - 1}, size=${pageSize})}"
+         class="btn btn-secondary pagination-pill">
+        &larr; Previous
+      </a>
+      <span th:unless="${hasPrev}"
+            class="btn btn-secondary pagination-pill"
+            style="opacity: 0.5; cursor: not-allowed;">
+        &larr; Previous
+      </span>
+
+      <span class="btn btn-secondary pagination-pill" style="cursor: default;">
+        Page <span th:text="${currentPage + 1}">1</span> of <span th:text="${totalPages > 0 ? totalPages : 1}">1</span>
+      </span>
+
+      <a th:if="${hasNext}"
+         th:href="@{/history(email=${selectedEmail}, page=${currentPage + 1}, size=${pageSize})}"
+         class="btn btn-secondary pagination-pill">
+        Next &rarr;
+      </a>
+      <span th:unless="${hasNext}"
+            class="btn btn-secondary pagination-pill"
+            style="opacity: 0.5; cursor: not-allowed;">
+        Next &rarr;
+      </span>
+    </div>
+  </nav>
+
+  <!-- Empty State -->
+  <div class="card glass empty-state animate-enter" style="--i: 1;" th:if="${transactions == null or transactions.isEmpty()}">
+    <div class="empty-state-icon" aria-hidden="true">📜</div>
+    <div class="empty-state-title">No transactions found</div>
+    <p style="font-size: 0.875rem; margin-top: 0.5rem;">
+      No ledger activity has been recorded for this user yet.
+    </p>
+    <div style="margin-top: 1rem;">
+      <a th:href="@{/transactions/new(email=${selectedEmail})}" class="btn btn-primary">
+        Create First Transaction
+      </a>
+    </div>
+  </div>
+</main>
+
+<footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

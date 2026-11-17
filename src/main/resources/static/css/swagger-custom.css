@@ -1,0 +1,14 @@
+.swagger-ui .topbar {
+  background-color: #0F1B33 !important;
+  border-bottom: 2px solid #F2A93B;
+}
+
+.swagger-ui .topbar .topbar-wrapper img {
+  content: url('/img/vaultcore-logo.svg') !important;
+  height: 38px !important;
+  width: auto !important;
+}
+
+.swagger-ui .topbar .topbar-wrapper .link svg {
+  display: none !important;
+}
